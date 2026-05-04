@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <title>WebGIS Persebaran Sekolah di California, USA</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+
+        .judul {
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            z-index: 1000;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="judul">WebGIS Persebaran Sekolah di California, USA</div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        // Inisialisasi peta
+        var map = L.map('map').setView([36.7783, -119.4179], 6);
+
+        // Basemap OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Ambil data GeoJSON
+        fetch('data/sekolah.geojson')
+            .then(response => response.json())
+            .then(data => {
+
+                // Tampilkan GeoJSON
+                L.geoJSON(data, {
+
+                    // Marker untuk titik
+                    pointToLayer: function (feature, latlng) {
+                        return L.marker(latlng);
+                    },
+
+                    // Popup
+                    onEachFeature: function (feature, layer) {
+                        let props = feature.properties;
+
+                        let popup = `
+              <b>Sekolah</b><br>
+              Nama: ${props.name || 'Tidak ada'}<br>
+              Jenis: ${props.amenity || 'school'}
+            `;
+
+                        layer.bindPopup(popup);
+                    }
+
+                }).addTo(map);
+
+            })
+            .catch(error => {
+                console.log("GeoJSON gagal dimuat:", error);
+                alert("Data GeoJSON gagal dimuat. Cek nama file dan folder data.");
+            });
+    </script>
+</body>
+
+</html>
